@@ -20,3 +20,17 @@ https://web.stanford.edu/~jurafsky/slp3/ed3book.pdf
 
 ## Natural Language Processing with Python (PDF)
 http://www.datascienceassn.org/sites/default/files/Natural%20Language%20Processing%20with%20Python.pdf
+
+
+## DataSets
+Datasets: http://www.openslr.org/12/
+
+## Jonathan Balaban, Deep Learning Tips and Tricks (2018)
+https://towardsdatascience.com/deep-learning-tips-and-tricks-1ef708ec5f53
+
+## Mauro Di Pietro, Deep Learning with Python: Neural Networks (2021)
+https://towardsdatascience.com/deep-learning-with-python-neural-networks-complete-tutorial-6b53c0b06af0
+
+## Déborah Mesquita, Python AI: How to Build a Neural Network & Make Predictions (2021) 
+### (Parece menos complexo)
+https://realpython.com/python-ai-neural-network/
