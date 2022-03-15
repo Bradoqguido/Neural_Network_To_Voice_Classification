@@ -34,3 +34,5 @@ https://towardsdatascience.com/deep-learning-with-python-neural-networks-complet
 ## Déborah Mesquita, Python AI: How to Build a Neural Network & Make Predictions (2021) 
 ### (Parece menos complexo)
 https://realpython.com/python-ai-neural-network/
+
+https://peritodeaudio.com.br/index.php/pericia-de-voz
