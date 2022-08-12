@@ -1,3 +1,21 @@
+# Run the project
+
+## install 
+[venv and tensorflow](https://www.tensorflow.org/install/pip)
+
+**note: install the `tensorflow-cpu` package with the same command of tensorflow install**
+
+[scikit-learn](https://scikit-learn.org/stable/install.html)
+
+[pandas](https://pypi.org/project/pandas/)
+
+[librosa](https://librosa.org/doc/latest/install.html)
+
+[soudfile](https://pypi.org/project/SoundFile/)
+
+## run
+`python3 VoiceClassification.py`
+
 # Just some documentation about this topic
 
 ## Natural Language Processing (NLP)
