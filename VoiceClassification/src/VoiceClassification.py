@@ -9,13 +9,15 @@ import numpy as np
 import os
 
 print('Importing trains files...')
-#list the files
 filelist = os.listdir('speakers_train')
 
-print('Generating dataframe from train files...')
-#read them into pandas
-originalDataFrame = pd.DataFrame(filelist)
+print('Generating dataframe from audio files...')
 
+# Read them into pandas
+originalDataFrame = pd.DataFrame(filelist)
+originalDataFrame.to_csv('../out/originalDataFrame.csv')
+
+print('Setup trainDataFrame...')
 # Renaming the column name to file
 trainDataFrame = originalDataFrame.rename(columns={0: 'file'})
 
@@ -33,10 +35,34 @@ for i in range(0, len(trainDataFrame)):
 print('Linking speakers...')
 # We now assign the speaker to a new column
 trainDataFrame['speakerId'] = speaker
+trainDataFrame.to_csv('../out/trainDataFrame.csv')
+
+
+print('Setup validationDataFrame...')
+# Renaming the column name to file
+validationDataFrame = originalDataFrame.rename(columns={0: 'file'})
+
+# Code in case we have to drop the '.DS_Store' and reset the index
+validationDataFrame[validationDataFrame['file'] == '.DS_Store']
+validationDataFrame.drop(16, inplace=True)
+validationDataFrame = validationDataFrame.sample(frac=1).reset_index(drop=True)
+
+validationDataFrame.to_csv('../out/validationDataFrame.csv')
+
+
+# testDataFrame
+# Renaming the column name to file
+testDataFrame = originalDataFrame.rename(columns={0: 'file'})
+
+# Code in case we have to drop the '.DS_Store' and reset the index
+testDataFrame[testDataFrame['file'] == '.DS_Store']
+testDataFrame.drop(16, inplace=True)
+testDataFrame = testDataFrame.sample(frac=1).reset_index(drop=True)
+
+testDataFrame.to_csv('../out/testDataFrame.csv')
 
 print('Generating trainDataFrame.csv for analysis...')
 trainDataFrame.to_csv('../out/trainDataFrame.csv')
-
 
 def extract_features(files):
 	# Sets the name to be the path to where the file is in my computer
@@ -59,27 +85,33 @@ def extract_features(files):
 	return mfccs, chroma, mel, contrast, tonnetz
 
 print('Extracting features from files...')
-train_features = trainDataFrame.apply(extract_features, axis=1)
+extracted_train_features = trainDataFrame.apply(extract_features, axis=1)
+extracted_train_features.to_csv('../out/train_features.csv')
 
 print('Generating features train...')
 features_train = []
-for i in range(0, len(train_features)):
-	features_train.append(np.concatenate((train_features[i][0], train_features[i][1], train_features[i][2],train_features[i][3], train_features[i][4]),axis=0))
+for i in range(0, len(extracted_train_features)):
+	features_train.append(np.concatenate((
+		extracted_train_features[i][0],
+		extracted_train_features[i][1],
+		extracted_train_features[i][2],
+		extracted_train_features[i][3],
+		extracted_train_features[i][4]),axis=0))
 
 print('Generating x train data from features_train...')
 X_trainData = np.array(features_train)
 
 print('Generating x validation data from features_train...')
-X_validationData = np.array(originalDataFrame)
+X_validationData = np.array(validationDataFrame)
 
 print('Generating x test data from features_train...')
-X_testData = np.array(trainDataFrame)
+X_testData = np.array(testDataFrame)
 
-print('Generating y train data from tranDataFrame speakers...')
-y_trainData = np.array(trainDataFrame['speaker'])
+print('Generating y train data from speakers features array...')
+y_trainData = np.array(trainDataFrame['speakerId'])
 
-print('Generating y validation data from trainDataFrame speakers...')
-y_validationData = np.array(trainDataFrame['speaker'])
+print('Generating y validation data from speakers features array...')
+y_validationData = np.array(['speakerId'])
 
 print('Encoding y_train files to be ready for the neural network...')
 lb = LabelEncoder()
