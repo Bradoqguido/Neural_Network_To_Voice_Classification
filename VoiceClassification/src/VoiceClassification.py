@@ -7,127 +7,170 @@ import librosa
 from soundfile import *
 import numpy as np
 import os
+from queue import Queue
+from threading import Thread
 
-print('Importing trains files...')
-filelist = os.listdir('speakers_train')
+NUM_THREADS = 3
+threadQueue = Queue()
 
-print('Generating dataframe from audio files...')
-
-# Read them into pandas
-originalDataFrame = pd.DataFrame(filelist)
-originalDataFrame.to_csv('../out/originalDataFrame.csv')
-
-print('Setup trainDataFrame...')
-# Renaming the column name to file
-trainDataFrame = originalDataFrame.rename(columns={0: 'file'})
-
-# Code in case we have to drop the '.DS_Store' and reset the index
-trainDataFrame[trainDataFrame['file'] == '.DS_Store']
-trainDataFrame.drop(16, inplace=True)
-trainDataFrame = trainDataFrame.sample(frac=1).reset_index(drop=True)
-
-# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
-print('Extracting speakers...')
-speaker = []
-for i in range(0, len(trainDataFrame)):
-	speaker.append(trainDataFrame['file'][i].split('-')[0])
-
-print('Linking speakers...')
-# We now assign the speaker to a new column
-trainDataFrame['speakerId'] = speaker
-trainDataFrame.to_csv('../out/trainDataFrame.csv')
+trainDataFrame = pd.DataFrame([])
+validationDataFrame = pd.DataFrame([])
+testDataFrame = pd.DataFrame([])
 
 
-print('Setup validationDataFrame...')
-# Renaming the column name to file
-validationDataFrame = originalDataFrame.rename(columns={0: 'file'})
+def generateTrainData():
+	print('Generating dataframe from audio files...')
 
-# Code in case we have to drop the '.DS_Store' and reset the index
-validationDataFrame[validationDataFrame['file'] == '.DS_Store']
-validationDataFrame.drop(16, inplace=True)
-validationDataFrame = validationDataFrame.sample(frac=1).reset_index(drop=True)
+	print('Importing trains files...')
+	filelist = os.listdir('speakers_train')
+	
 
-validationDataFrame.to_csv('../out/validationDataFrame.csv')
+	print('Reading them into pandas...')
+	trainDataFrame = pd.DataFrame(filelist)
 
+	print('Renaming the column name to file...')
+	trainDataFrame = trainDataFrame.rename(columns={0: 'file'})
 
-# testDataFrame
-# Renaming the column name to file
-testDataFrame = originalDataFrame.rename(columns={0: 'file'})
+	# Code in case we have to drop the '.DS_Store' and reset the index
+	trainDataFrame[trainDataFrame['file'] == '.DS_Store']
+	trainDataFrame.drop(16, inplace=True)
+	trainDataFrame = trainDataFrame.sample(frac=1).reset_index(drop=True)
 
-# Code in case we have to drop the '.DS_Store' and reset the index
-testDataFrame[testDataFrame['file'] == '.DS_Store']
-testDataFrame.drop(16, inplace=True)
-testDataFrame = testDataFrame.sample(frac=1).reset_index(drop=True)
+	# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
+	print('Extracting speakers...')
+	speaker = []
+	for i in range(0, len(trainDataFrame)):
+		speaker.append(trainDataFrame['file'][i].split('-')[0])
 
-testDataFrame.to_csv('../out/testDataFrame.csv')
+	print('Linking speakers...')
+	# We now assign the speaker to a new column
+	trainDataFrame['speakerId'] = speaker
+	trainDataFrame.to_csv('../out/trainDataFrame.csv')
 
-print('Generating trainDataFrame.csv for analysis...')
-trainDataFrame.to_csv('../out/trainDataFrame.csv')
+def generateValidationData():
+	print('Importing trains files...')
+	filelist = os.listdir('speakers_validation')
+	
+	print('Generating dataframe from audio files...')
 
-def extract_features(files):
-	# Sets the name to be the path to where the file is in my computer
-	file_name = os.path.join(os.path.abspath('speakers_train') + '/' + str(files.file))
-	print('Loading the audio file as a floating point time series and assigns the default sample rate...')
-	print('Sample rate is set to 22050 by default...')
-	X, sample_rate = librosa.load(file_name, res_type='kaiser_fast')
-	print('Generating Mel-frequency cepstral coefficients (MFCCs) from a time series...')
-	mfccs = np.mean(librosa.feature.mfcc(y=X, sr=sample_rate, n_mfcc=40).T,axis=0)
-	print('Generating a Short-time Fourier transform (STFT) to use in the chroma_stft...')
-	stft = np.abs(librosa.stft(X))
-	print('Computing a chromagram from a waveform or power spectrogram...')
-	chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,axis=0)
-	print('Computing a mel-scaled spectrogram...')
-	mel = np.mean(librosa.feature.melspectrogram(X, sr=sample_rate).T, axis=0)
-	print('Computing spectral contrast...')
-	contrast = np.mean(librosa.feature.spectral_contrast(S=stft,sr=sample_rate).T,axis=0)
-	print('Computing the tonal centroid features (tonnetz)...')
-	tonnetz = np.mean(librosa.feature.tonnetz(y=librosa.effects.harmonic(X),sr=sample_rate).T,axis=0)
-	return mfccs, chroma, mel, contrast, tonnetz
+	# Read them into pandas
+	validationDataFrame = pd.DataFrame(filelist)
 
-print('Extracting features from files...')
-extracted_train_features = trainDataFrame.apply(extract_features, axis=1)
-extracted_train_features.to_csv('../out/train_features.csv')
+	print('Renaming the column name to file...')
+	validationDataFrame = validationDataFrame.rename(columns={0: 'file'})
 
-print('Generating features train...')
-features_train = []
-for i in range(0, len(extracted_train_features)):
-	features_train.append(np.concatenate((
-		extracted_train_features[i][0],
-		extracted_train_features[i][1],
-		extracted_train_features[i][2],
-		extracted_train_features[i][3],
-		extracted_train_features[i][4]),axis=0))
+	# Code in case we have to drop the '.DS_Store' and reset the index
+	validationDataFrame[validationDataFrame['file'] == '.DS_Store']
+	validationDataFrame.drop(16, inplace=True)
+	validationDataFrame = validationDataFrame.sample(frac=1).reset_index(drop=True)
 
-print('Generating x train data from features_train...')
-X_trainData = np.array(features_train)
+	# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
+	print('Extracting speakers...')
+	speaker = []
+	for i in range(0, len(validationDataFrame)):
+		speaker.append(validationDataFrame['file'][i].split('-')[0])
 
-print('Generating x validation data from features_train...')
-X_validationData = np.array(validationDataFrame)
+	print('Linking speakers...')
+	# We now assign the speaker to a new column
+	validationDataFrame['speakerId'] = speaker
+	validationDataFrame.to_csv('../out/validationDataFrame.csv')
 
-print('Generating x test data from features_train...')
-X_testData = np.array(testDataFrame)
+def generateTestData(): 
+	print('Importing trains files...')
+	filelist = os.listdir('speakers_test')
+	
+	print('Generating dataframe from audio files...')
 
-print('Generating y train data from speakers features array...')
-y_trainData = np.array(trainDataFrame['speakerId'])
+	# Read them into pandas
+	testDataFrame = pd.DataFrame(filelist)
 
-print('Generating y validation data from speakers features array...')
-y_validationData = np.array(['speakerId'])
+	print('Renaming the column name to file...')
+	testDataFrame = testDataFrame.rename(columns={0: 'file'})
 
-print('Encoding y_train files to be ready for the neural network...')
-lb = LabelEncoder()
-y_trainData = to_categorical(lb.fit_transform(y_trainData))
-y_validationData = to_categorical(lb.fit_transform(y_validationData))
+	# Code in case we have to drop the '.DS_Store' and reset the index
+	testDataFrame[testDataFrame['file'] == '.DS_Store']
+	testDataFrame.drop(16, inplace=True)
+	testDataFrame = testDataFrame.sample(frac=1).reset_index(drop=True)
 
-print('Generating scaled data...')
-ss = StandardScaler()
+	# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
+	print('Extracting speakers...')
+	speaker = []
+	for i in range(0, len(testDataFrame)):
+		speaker.append(testDataFrame['file'][i].split('-')[0])
 
-print('Generating scaloned X_trainData...')
-X_trainData = ss.fit_transform(X_trainData)
+	print('Linking speakers...')
+	# We now assign the speaker to a new column
+	testDataFrame['speakerId'] = speaker
+	testDataFrame.to_csv('../out/validationDataFrame.csv')
 
-print('Generatind scaloned X_validationData...')
-X_validationData = ss.transform(X_validationData)
+generateTrainData()
+generateValidationData()
+generateTestData()
 
-print('Generating scaloned X_testData...')
-X_testData = ss.transform(X_testData)
+# def extract_features(files):
+# 	# Sets the name to be the path to where the file is in my computer
+# 	file_name = os.path.join(os.path.abspath('speakers_train') + '/' + str(files.file))
+# 	print('Loading the audio file as a floating point time series and assigns the default sample rate...')
+# 	print('Sample rate is set to 22050 by default...')
+# 	X, sample_rate = librosa.load(file_name, res_type='kaiser_fast')
+# 	print('Generating Mel-frequency cepstral coefficients (MFCCs) from a time series...')
+# 	mfccs = np.mean(librosa.feature.mfcc(y=X, sr=sample_rate, n_mfcc=40).T,axis=0)
+# 	print('Generating a Short-time Fourier transform (STFT) to use in the chroma_stft...')
+# 	stft = np.abs(librosa.stft(X))
+# 	print('Computing a chromagram from a waveform or power spectrogram...')
+# 	chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,axis=0)
+# 	print('Computing a mel-scaled spectrogram...')
+# 	mel = np.mean(librosa.feature.melspectrogram(X, sr=sample_rate).T, axis=0)
+# 	print('Computing spectral contrast...')
+# 	contrast = np.mean(librosa.feature.spectral_contrast(S=stft,sr=sample_rate).T,axis=0)
+# 	print('Computing the tonal centroid features (tonnetz)...')
+# 	tonnetz = np.mean(librosa.feature.tonnetz(y=librosa.effects.harmonic(X),sr=sample_rate).T,axis=0)
+# 	return mfccs, chroma, mel, contrast, tonnetz
+
+# print('Extracting features from files...')
+# extracted_train_features = trainDataFrame.apply(extract_features, axis=1)
+# extracted_train_features.to_csv('../out/train_features.csv')
+
+# print('Generating features train...')
+# features_train = []
+# for i in range(0, len(extracted_train_features)):
+# 	features_train.append(np.concatenate((
+# 		extracted_train_features[i][0],
+# 		extracted_train_features[i][1],
+# 		extracted_train_features[i][2],
+# 		extracted_train_features[i][3],
+# 		extracted_train_features[i][4]),axis=0))
+
+# print('Generating x train data from features_train...')
+# X_trainData = np.array(features_train)
+
+# print('Generating x validation data from features_train...')
+# X_validationData = np.array(validationDataFrame)
+
+# print('Generating x test data from features_train...')
+# X_testData = np.array(testDataFrame)
+
+# print('Generating y train data from speakers features array...')
+# y_trainData = np.array(trainDataFrame['speakerId'])
+
+# print('Generating y validation data from speakers features array...')
+# y_validationData = np.array(['speakerId'])
+
+# print('Encoding y_train files to be ready for the neural network...')
+# lb = LabelEncoder()
+# y_trainData = to_categorical(lb.fit_transform(y_trainData))
+# y_validationData = to_categorical(lb.fit_transform(y_validationData))
+
+# print('Generating scaled data...')
+# ss = StandardScaler()
+
+# print('Generating scaloned X_trainData...')
+# X_trainData = ss.fit_transform(X_trainData)
+
+# print('Generatind scaloned X_validationData...')
+# X_validationData = ss.transform(X_validationData)
+
+# print('Generating scaloned X_testData...')
+# X_testData = ss.transform(X_testData)
 
 print('end.')

@@ -1,3 +1,5 @@
 **/src/venv/
 **/src/speakers_train
+**/src/speakers_validation
+**/src/speakers_test
 **/out/

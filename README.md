@@ -54,3 +54,7 @@ https://towardsdatascience.com/deep-learning-with-python-neural-networks-complet
 https://realpython.com/python-ai-neural-network/
 
 https://peritodeaudio.com.br/index.php/pericia-de-voz
+
+
+# multthreading
+https://towardsdatascience.com/multithreading-multiprocessing-python-180d0975ab29
