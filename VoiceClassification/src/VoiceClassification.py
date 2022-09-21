@@ -7,24 +7,15 @@ import librosa
 from soundfile import *
 import numpy as np
 import os
-from queue import Queue
-from threading import Thread
-
-NUM_THREADS = 3
-threadQueue = Queue()
 
 trainDataFrame = pd.DataFrame([])
 validationDataFrame = pd.DataFrame([])
 testDataFrame = pd.DataFrame([])
 
-
 def generateTrainData():
-	print('Generating dataframe from audio files...')
-
 	print('Importing trains files...')
 	filelist = os.listdir('speakers_train')
 	
-
 	print('Reading them into pandas...')
 	trainDataFrame = pd.DataFrame(filelist)
 
@@ -48,7 +39,7 @@ def generateTrainData():
 	trainDataFrame.to_csv('../out/trainDataFrame.csv')
 
 def generateValidationData():
-	print('Importing trains files...')
+	print('Importing validation files...')
 	filelist = os.listdir('speakers_validation')
 	
 	print('Generating dataframe from audio files...')
@@ -76,7 +67,7 @@ def generateValidationData():
 	validationDataFrame.to_csv('../out/validationDataFrame.csv')
 
 def generateTestData(): 
-	print('Importing trains files...')
+	print('Importing test files...')
 	filelist = os.listdir('speakers_test')
 	
 	print('Generating dataframe from audio files...')
@@ -101,45 +92,121 @@ def generateTestData():
 	print('Linking speakers...')
 	# We now assign the speaker to a new column
 	testDataFrame['speakerId'] = speaker
-	testDataFrame.to_csv('../out/validationDataFrame.csv')
+	testDataFrame.to_csv('../out/testDataFrame.csv')
 
+print('Generating dataframe from audio files...')
 generateTrainData()
-generateValidationData()
-generateTestData()
+# generateValidationData()
+# generateTestData()
 
-# def extract_features(files):
-# 	# Sets the name to be the path to where the file is in my computer
-# 	file_name = os.path.join(os.path.abspath('speakers_train') + '/' + str(files.file))
-# 	print('Loading the audio file as a floating point time series and assigns the default sample rate...')
-# 	print('Sample rate is set to 22050 by default...')
-# 	X, sample_rate = librosa.load(file_name, res_type='kaiser_fast')
-# 	print('Generating Mel-frequency cepstral coefficients (MFCCs) from a time series...')
-# 	mfccs = np.mean(librosa.feature.mfcc(y=X, sr=sample_rate, n_mfcc=40).T,axis=0)
-# 	print('Generating a Short-time Fourier transform (STFT) to use in the chroma_stft...')
-# 	stft = np.abs(librosa.stft(X))
-# 	print('Computing a chromagram from a waveform or power spectrogram...')
-# 	chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,axis=0)
-# 	print('Computing a mel-scaled spectrogram...')
-# 	mel = np.mean(librosa.feature.melspectrogram(X, sr=sample_rate).T, axis=0)
-# 	print('Computing spectral contrast...')
-# 	contrast = np.mean(librosa.feature.spectral_contrast(S=stft,sr=sample_rate).T,axis=0)
-# 	print('Computing the tonal centroid features (tonnetz)...')
-# 	tonnetz = np.mean(librosa.feature.tonnetz(y=librosa.effects.harmonic(X),sr=sample_rate).T,axis=0)
-# 	return mfccs, chroma, mel, contrast, tonnetz
+def extract_train_features(files):
+	# Sets the name to be the path to where the file is in my computer
+	file_name = os.path.join(os.path.abspath('speakers_train') + '/' + str(files.file))
 
-# print('Extracting features from files...')
-# extracted_train_features = trainDataFrame.apply(extract_features, axis=1)
-# extracted_train_features.to_csv('../out/train_features.csv')
+	print('Loading the audio file as a floating point time series and assigns the default sample rate...')
+	print('Sample rate is set to 22050 by default...')
+	X, sample_rate = librosa.load(file_name, res_type='kaiser_fast')
 
-# print('Generating features train...')
-# features_train = []
-# for i in range(0, len(extracted_train_features)):
-# 	features_train.append(np.concatenate((
-# 		extracted_train_features[i][0],
-# 		extracted_train_features[i][1],
-# 		extracted_train_features[i][2],
-# 		extracted_train_features[i][3],
-# 		extracted_train_features[i][4]),axis=0))
+	print('Generating Mel-frequency cepstral coefficients (MFCCs) from a time series...')
+	mfccs = np.mean(librosa.feature.mfcc(y=X, sr=sample_rate, n_mfcc=40).T,axis=0)
+
+	print('Generating a Short-time Fourier transform (STFT) to use in the chroma_stft...')
+	stft = np.abs(librosa.stft(X))
+
+	print('Computing a chromagram from a waveform or power spectrogram...')
+	chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,axis=0)
+
+	print('Computing a mel-scaled spectrogram...')
+	mel = np.mean(librosa.feature.melspectrogram(X, sr=sample_rate).T, axis=0)
+
+	print('Computing spectral contrast...')
+	contrast = np.mean(librosa.feature.spectral_contrast(S=stft,sr=sample_rate).T,axis=0)
+	
+	print('Computing the tonal centroid features (tonnetz)...')
+	tonnetz = np.mean(librosa.feature.tonnetz(y=librosa.effects.harmonic(X),sr=sample_rate).T,axis=0)
+	return mfccs, chroma, mel, contrast, tonnetz
+
+print('Extracting train features from files...')
+extracted_train_features = trainDataFrame.apply(extract_train_features, axis=1)
+extracted_train_features.to_csv('../out/extracted_train_features.csv')
+
+print('Generating train features train...')
+features_for_train = []
+for i in range(0, len(extracted_train_features)):
+	features_for_train.append(np.concatenate((
+		extracted_train_features[i][0],
+		extracted_train_features[i][1],
+		extracted_train_features[i][2],
+		extracted_train_features[i][3],
+		extracted_train_features[i][4]),axis=0))
+
+def extract_test_features(files):
+	# Sets the name to be the path to where the file is in my computer
+	file_name = os.path.join(os.path.abspath('speakers_test') + '/' + str(files.file))
+	print('Loading the audio file as a floating point time series and assigns the default sample rate...')
+	print('Sample rate is set to 22050 by default...')
+	X, sample_rate = librosa.load(file_name, res_type='kaiser_fast')
+	print('Generating Mel-frequency cepstral coefficients (MFCCs) from a time series...')
+	mfccs = np.mean(librosa.feature.mfcc(y=X, sr=sample_rate, n_mfcc=40).T,axis=0)
+	print('Generating a Short-time Fourier transform (STFT) to use in the chroma_stft...')
+	stft = np.abs(librosa.stft(X))
+	print('Computing a chromagram from a waveform or power spectrogram...')
+	chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,axis=0)
+	print('Computing a mel-scaled spectrogram...')
+	mel = np.mean(librosa.feature.melspectrogram(X, sr=sample_rate).T, axis=0)
+	print('Computing spectral contrast...')
+	contrast = np.mean(librosa.feature.spectral_contrast(S=stft,sr=sample_rate).T,axis=0)
+	print('Computing the tonal centroid features (tonnetz)...')
+	tonnetz = np.mean(librosa.feature.tonnetz(y=librosa.effects.harmonic(X),sr=sample_rate).T,axis=0)
+	return mfccs, chroma, mel, contrast, tonnetz
+
+# print('Extracting test features from files...')
+# extracted_test_features = trainDataFrame.apply(extract_test_features, axis=1)
+# extracted_test_features.to_csv('../out/extracted_test_features.csv')
+
+# print('Generating test features train...')
+# features_for_test = []
+# for i in range(0, len(extracted_test_features)):
+# 	features_for_test.append(np.concatenate((
+# 		extracted_test_features[i][0],
+# 		extracted_test_features[i][1],
+# 		extracted_test_features[i][2],
+# 		extracted_test_features[i][3],
+# 		extracted_test_features[i][4]),axis=0))
+
+def extract_validation_features(files):
+	# Sets the name to be the path to where the file is in my computer
+	file_name = os.path.join(os.path.abspath('speakers_validation') + '/' + str(files.file))
+	print('Loading the audio file as a floating point time series and assigns the default sample rate...')
+	print('Sample rate is set to 22050 by default...')
+	X, sample_rate = librosa.load(file_name, res_type='kaiser_fast')
+	print('Generating Mel-frequency cepstral coefficients (MFCCs) from a time series...')
+	mfccs = np.mean(librosa.feature.mfcc(y=X, sr=sample_rate, n_mfcc=40).T,axis=0)
+	print('Generating a Short-time Fourier transform (STFT) to use in the chroma_stft...')
+	stft = np.abs(librosa.stft(X))
+	print('Computing a chromagram from a waveform or power spectrogram...')
+	chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,axis=0)
+	print('Computing a mel-scaled spectrogram...')
+	mel = np.mean(librosa.feature.melspectrogram(X, sr=sample_rate).T, axis=0)
+	print('Computing spectral contrast...')
+	contrast = np.mean(librosa.feature.spectral_contrast(S=stft,sr=sample_rate).T,axis=0)
+	print('Computing the tonal centroid features (tonnetz)...')
+	tonnetz = np.mean(librosa.feature.tonnetz(y=librosa.effects.harmonic(X),sr=sample_rate).T,axis=0)
+	return mfccs, chroma, mel, contrast, tonnetz
+
+# print('Extracting validation features from files...')
+# extracted_validation_features = trainDataFrame.apply(extract_test_features, axis=1)
+# extracted_validation_features.to_csv('../out/extracted_validation_features.csv')
+
+# print('Generating validation features train...')
+# features_for_validation = []
+# for i in range(0, len(extracted_validation_features)):
+# 	features_for_validation.append(np.concatenate((
+# 		extracted_validation_features[i][0],
+# 		extracted_validation_features[i][1],
+# 		extracted_validation_features[i][2],
+# 		extracted_validation_features[i][3],
+# 		extracted_validation_features[i][4]),axis=0))
 
 # print('Generating x train data from features_train...')
 # X_trainData = np.array(features_train)
