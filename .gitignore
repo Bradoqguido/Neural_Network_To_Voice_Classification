@@ -1,5 +1,7 @@
 **/src/venv/
-**/src/speakers_train
-**/src/speakers_validation
-**/src/speakers_test
-**/out/
+
+# Ignore the zipped audio files. 
+*.tar.gz
+
+# Ignore the audio files.
+*.flac
