@@ -26,85 +26,92 @@ trainDataFrame = pd.DataFrame([])
 validationDataFrame = pd.DataFrame([])
 testDataFrame = pd.DataFrame([])
 
-logging.info('Importing trains files...')
-filelist = os.listdir('speakers_train')
+def importTrainData(): 
+	logging.info('Importing trains files...')
+	filelist = os.listdir('speakers_train')
 
-logging.info('Reading them into pandas...')
-trainDataFrame = pd.DataFrame(filelist)
+	logging.info('Reading them into pandas...')
+	trainDataFrame = pd.DataFrame(filelist)
 
-logging.info('Renaming the column name to file...')
-trainDataFrame = trainDataFrame.rename(columns={0: 'file'})
+	logging.info('Renaming the column name to file...')
+	trainDataFrame = trainDataFrame.rename(columns={0: 'file'})
 
-# Code in case we have to drop the '.DS_Store' and reset the index
-trainDataFrame[trainDataFrame['file'] == '.DS_Store']
-trainDataFrame.drop(16, inplace=True)
-trainDataFrame = trainDataFrame.sample(frac=1).reset_index(drop=True)
+	# Code in case we have to drop the '.DS_Store' and reset the index
+	trainDataFrame[trainDataFrame['file'] == '.DS_Store']
+	trainDataFrame.drop(16, inplace=True)
+	trainDataFrame = trainDataFrame.sample(frac=1).reset_index(drop=True)
 
-# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
-logging.info('Extracting speakers...')
-speaker = []
-for i in range(0, len(trainDataFrame)):
-	speaker.append(trainDataFrame['file'][i].split('-')[0])
+	# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
+	logging.info('Extracting speakers...')
+	speaker = []
+	for i in range(0, len(trainDataFrame)):
+		speaker.append(trainDataFrame['file'][i].split('-')[0])
 
-logging.info('Linking speakers...')
-# We now assign the speaker to a new column
-trainDataFrame['speakerId'] = speaker
-trainDataFrame.to_csv('../out/trainDataFrame.csv')
+	logging.info('Linking speakers...')
+	# We now assign the speaker to a new column
+	trainDataFrame['speakerId'] = speaker
+	trainDataFrame.to_csv('../out/trainDataFrame.csv')
+	return trainDataFrame
 
-logging.info('Importing validation files...')
-filelist = os.listdir('speakers_validation')
+def importValidationData():
+	logging.info('Importing validation files...')
+	filelist = os.listdir('speakers_validation')
 
-logging.info('Generating dataframe from audio files...')
+	# Read them into pandas
+	validationDataFrame = pd.DataFrame(filelist)
 
-# Read them into pandas
-validationDataFrame = pd.DataFrame(filelist)
+	logging.info('Renaming the column name to file...')
+	validationDataFrame = validationDataFrame.rename(columns={0: 'file'})
 
-logging.info('Renaming the column name to file...')
-validationDataFrame = validationDataFrame.rename(columns={0: 'file'})
+	# Code in case we have to drop the '.DS_Store' and reset the index
+	validationDataFrame[validationDataFrame['file'] == '.DS_Store']
+	validationDataFrame.drop(16, inplace=True)
+	validationDataFrame = validationDataFrame.sample(frac=1).reset_index(drop=True)
 
-# Code in case we have to drop the '.DS_Store' and reset the index
-validationDataFrame[validationDataFrame['file'] == '.DS_Store']
-validationDataFrame.drop(16, inplace=True)
-validationDataFrame = validationDataFrame.sample(frac=1).reset_index(drop=True)
+	# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
+	logging.info('Extracting speakers...')
+	speaker = []
+	for i in range(0, len(validationDataFrame)):
+		speaker.append(validationDataFrame['file'][i].split('-')[0])
 
-# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
-logging.info('Extracting speakers...')
-speaker = []
-for i in range(0, len(validationDataFrame)):
-	speaker.append(validationDataFrame['file'][i].split('-')[0])
+	logging.info('Linking speakers...')
+	# We now assign the speaker to a new column
+	validationDataFrame['speakerId'] = speaker
+	validationDataFrame.to_csv('../out/validationDataFrame.csv')
+	return validationDataFrame
 
-logging.info('Linking speakers...')
-# We now assign the speaker to a new column
-validationDataFrame['speakerId'] = speaker
-validationDataFrame.to_csv('../out/validationDataFrame.csv')
+def importTestData(): 
+	logging.info('Importing test files...')
+	filelist = os.listdir('speakers_test')
 
-# def generateTestData(): 
-logging.info('Importing test files...')
-filelist = os.listdir('speakers_test')
+	logging.info('Generating dataframe from audio files...')
 
-logging.info('Generating dataframe from audio files...')
+	# Read them into pandas
+	testDataFrame = pd.DataFrame(filelist)
 
-# Read them into pandas
-testDataFrame = pd.DataFrame(filelist)
+	logging.info('Renaming the column name to file...')
+	testDataFrame = testDataFrame.rename(columns={0: 'file'})
 
-logging.info('Renaming the column name to file...')
-testDataFrame = testDataFrame.rename(columns={0: 'file'})
+	# Code in case we have to drop the '.DS_Store' and reset the index
+	testDataFrame[testDataFrame['file'] == '.DS_Store']
+	testDataFrame.drop(16, inplace=True)
+	testDataFrame = testDataFrame.sample(frac=1).reset_index(drop=True)
 
-# Code in case we have to drop the '.DS_Store' and reset the index
-testDataFrame[testDataFrame['file'] == '.DS_Store']
-testDataFrame.drop(16, inplace=True)
-testDataFrame = testDataFrame.sample(frac=1).reset_index(drop=True)
+	# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
+	logging.info('Extracting speakers...')
+	speaker = []
+	for i in range(0, len(testDataFrame)):
+		speaker.append(testDataFrame['file'][i].split('-')[0])
 
-# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
-logging.info('Extracting speakers...')
-speaker = []
-for i in range(0, len(testDataFrame)):
-	speaker.append(testDataFrame['file'][i].split('-')[0])
+	logging.info('Linking speakers...')
+	# We now assign the speaker to a new column
+	testDataFrame['speakerId'] = speaker
+	testDataFrame.to_csv('../out/testDataFrame.csv')
+	return testDataFrame
 
-logging.info('Linking speakers...')
-# We now assign the speaker to a new column
-testDataFrame['speakerId'] = speaker
-testDataFrame.to_csv('../out/testDataFrame.csv')
+trainDataFrame = importTrainData()
+testDataFrame = importTestData()
+validationDataFrame = importValidationData()
 
 logging.info('Generating dataframe from audio files...')
 
@@ -225,14 +232,14 @@ for i in range(0, len(extracted_validation_features)):
 		extracted_validation_features[i][3],
 		extracted_validation_features[i][4]),axis=0))
 
-# logging.info('Generating x train data from features_train...')
-# X_trainData = np.array(features_train)
+logging.info('Generating x train data from features_for_train...')
+X_trainData = np.array(features_for_train)
 
-# logging.info('Generating x validation data from features_train...')
-# X_validationData = np.array(validationDataFrame)
+logging.info('Generating x test data from features_for_test...')
+X_testData = np.array(features_for_test)
 
-# logging.info('Generating x test data from features_train...')
-# X_testData = np.array(testDataFrame)
+logging.info('Generating x validation data from features_for_validation...')
+X_validationData = np.array(features_for_validation)
 
 # logging.info('Generating y train data from speakers features array...')
 # y_trainData = np.array(trainDataFrame['speakerId'])
