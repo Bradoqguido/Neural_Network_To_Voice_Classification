@@ -1,4 +1,6 @@
 print('Importing libraries...')
+from importSpeakers import ImportSpeakers
+
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.utils import to_categorical
@@ -13,105 +15,11 @@ import logging
 format = "%(asctime)s: %(message)s"
 logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 
-def parallelize_dataframe(df, func, n_cores=16):
-	# Use parallelism processing to process faster.
-	df_split = np.array_split(df, n_cores)
-	pool = Pool(n_cores)
-	df = pd.concat(pool.map(func, df_split))
-	pool.close()
-	pool.join()
-	return df
-					
-trainDataFrame = pd.DataFrame([])
-validationDataFrame = pd.DataFrame([])
-testDataFrame = pd.DataFrame([])
+importedSpeakers = ImportSpeakers('speakers_train', 'speakers_test', 'speakers_validation')				
 
-def importTrainData(): 
-	logging.info('Importing trains files...')
-	filelist = os.listdir('speakers_train')
-
-	logging.info('Reading them into pandas...')
-	trainDataFrame = pd.DataFrame(filelist)
-
-	logging.info('Renaming the column name to file...')
-	trainDataFrame = trainDataFrame.rename(columns={0: 'file'})
-
-	# Code in case we have to drop the '.DS_Store' and reset the index
-	trainDataFrame[trainDataFrame['file'] == '.DS_Store']
-	trainDataFrame.drop(16, inplace=True)
-	trainDataFrame = trainDataFrame.sample(frac=1).reset_index(drop=True)
-
-	# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
-	logging.info('Extracting speakers...')
-	speaker = []
-	for i in range(0, len(trainDataFrame)):
-		speaker.append(trainDataFrame['file'][i].split('-')[0])
-
-	logging.info('Linking speakers...')
-	# We now assign the speaker to a new column
-	trainDataFrame['speakerId'] = speaker
-	trainDataFrame.to_csv('../out/trainDataFrame.csv')
-	return trainDataFrame
-
-def importValidationData():
-	logging.info('Importing validation files...')
-	filelist = os.listdir('speakers_validation')
-
-	# Read them into pandas
-	validationDataFrame = pd.DataFrame(filelist)
-
-	logging.info('Renaming the column name to file...')
-	validationDataFrame = validationDataFrame.rename(columns={0: 'file'})
-
-	# Code in case we have to drop the '.DS_Store' and reset the index
-	validationDataFrame[validationDataFrame['file'] == '.DS_Store']
-	validationDataFrame.drop(16, inplace=True)
-	validationDataFrame = validationDataFrame.sample(frac=1).reset_index(drop=True)
-
-	# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
-	logging.info('Extracting speakers...')
-	speaker = []
-	for i in range(0, len(validationDataFrame)):
-		speaker.append(validationDataFrame['file'][i].split('-')[0])
-
-	logging.info('Linking speakers...')
-	# We now assign the speaker to a new column
-	validationDataFrame['speakerId'] = speaker
-	validationDataFrame.to_csv('../out/validationDataFrame.csv')
-	return validationDataFrame
-
-def importTestData(): 
-	logging.info('Importing test files...')
-	filelist = os.listdir('speakers_test')
-
-	logging.info('Generating dataframe from audio files...')
-
-	# Read them into pandas
-	testDataFrame = pd.DataFrame(filelist)
-
-	logging.info('Renaming the column name to file...')
-	testDataFrame = testDataFrame.rename(columns={0: 'file'})
-
-	# Code in case we have to drop the '.DS_Store' and reset the index
-	testDataFrame[testDataFrame['file'] == '.DS_Store']
-	testDataFrame.drop(16, inplace=True)
-	testDataFrame = testDataFrame.sample(frac=1).reset_index(drop=True)
-
-	# We create an empty list where we will append all the speakers ids for each row of our dataframe by slicing the file name since we know the id is the first number before the hash
-	logging.info('Extracting speakers...')
-	speaker = []
-	for i in range(0, len(testDataFrame)):
-		speaker.append(testDataFrame['file'][i].split('-')[0])
-
-	logging.info('Linking speakers...')
-	# We now assign the speaker to a new column
-	testDataFrame['speakerId'] = speaker
-	testDataFrame.to_csv('../out/testDataFrame.csv')
-	return testDataFrame
-
-trainDataFrame = importTrainData()
-testDataFrame = importTestData()
-validationDataFrame = importValidationData()
+trainDataFrame = importedSpeakers.trainDataFrame
+testDataFrame = importedSpeakers.testDataFrame
+validationDataFrame = importedSpeakers.validationDataFrame
 
 logging.info('Generating dataframe from audio files...')
 
