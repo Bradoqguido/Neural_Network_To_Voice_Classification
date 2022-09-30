@@ -6,47 +6,43 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.utils import to_categorical
 import pandas as pd
-import librosa
-from soundfile import *
 import numpy as np
-import os
-from multiprocessing import  Pool
 import logging
 
 format = "%(asctime)s: %(message)s"
 logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 
-importedSpeakers = ImportSpeakers('speakers_train', 'speakers_test', 'speakers_validation')				
+logging.info('Indexing and importing audio files from speakers...')
 
-trainDataFrame = importedSpeakers.trainDataFrame
-testDataFrame = importedSpeakers.testDataFrame
-validationDataFrame = importedSpeakers.validationDataFrame
+trainSpeakers = ImportSpeakers('train', 'speakers_train')
+trainSpeakers.importedDataFrame.to_csv('../out/trainDataFrame.csv')
 
-logging.info('Generating dataframe from audio files...')
+testSpeakers = ImportSpeakers('test', 'speakers_test')
+testSpeakers.importedDataFrame.to_csv('../out/testDataFrame.csv')
 
-logging.info('Extracting train features from files...')
-train_features_extractor = ExtractFeatures('train', 'speakers_train', trainDataFrame)
-train_features = pd.DataFrame(train_features_extractor.extracted_features)
-train_features.to_csv('../out/extracted_train_features.csv')
+validationSpeakers = ImportSpeakers('validation', 'speakers_validation')
+validationSpeakers.importedDataFrame.to_csv('../out/validationDataFrame.csv')
 
-logging.info('Extracting test features from files...')
-test_features_extractor = ExtractFeatures('test', 'speakers_test', testDataFrame)
-test_features = pd.DataFrame(test_features_extractor.extracted_features)
-test_features.to_csv('../out/extracted_test_features.csv')
+logging.info('Generating dataFrame from audio files...')
 
-logging.info('Extracting validation features from files...')
-validation_features_extractor = ExtractFeatures('validation', 'speakers_validation', validationDataFrame)
-validation_features = pd.DataFrame(validation_features_extractor.extracted_features)
-validation_features.to_csv('../out/extracted_validation_features.csv')
+train_features_extractor = ExtractFeatures('train', 'speakers_train', trainSpeakers.importedDataFrame)
+train_features_extractor.extracted_features.to_csv('../out/extracted_train_features.csv')
 
-logging.info('Generating x train data from features_for_train...')
-X_trainData = np.array(test_features_extractor.features)
+test_features_extractor = ExtractFeatures('test', 'speakers_test', testSpeakers.importedDataFrame)
+test_features_extractor.extracted_features.to_csv('../out/extracted_test_features.csv')
 
-logging.info('Generating x test data from features_for_test...')
-X_testData = np.array(test_features_extractor.features)
+validation_features_extractor = ExtractFeatures('validation', 'speakers_validation', validationSpeakers.importedDataFrame)
+validation_features_extractor.extracted_features.to_csv('../out/extracted_validation_features.csv')
 
-logging.info('Generating x validation data from features_for_validation...')
-X_validationData = np.array(validation_features_extractor.features)
+logging.info('Generating x train data from train features...')
+X_trainData = np.array(train_features_extractor.features_train)
+
+logging.info('Generating x test data from test features...')
+X_testData = np.array(test_features_extractor.features_train)
+
+logging.info('Generating x validation data from validation features...')
+X_validationData = np.array(validation_features_extractor.features_train)
+
 
 # logging.info('Generating y train data from speakers features array...')
 # y_trainData = np.array(trainDataFrame['speakerId'])

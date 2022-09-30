@@ -10,9 +10,12 @@ class ExtractFeatures:
 	def __init__(self, file_type, folder_path, dataFrame):
 		self.file_type = file_type
 		self.folder_path = folder_path
+		
+		logging.info('Extracting %s features from files...', file_type)
 		self.extracted_features = self.parallelize_dataFrame(dataFrame, self.extract_features_caller)
-		logging.info('Generating train features train...')
-		self.features = []
+
+		logging.info('Generating %s features train...', file_type)
+		self.features_train = []
 		for i in range(0, len(self.extracted_features)):
 			self.features.append(np.concatenate((
 				self.extracted_features[i][0],
