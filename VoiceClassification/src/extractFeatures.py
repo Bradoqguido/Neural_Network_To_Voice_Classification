@@ -17,7 +17,7 @@ class ExtractFeatures:
 		logging.info('Generating %s features train...', file_type)
 		self.features_train = []
 		for i in range(0, len(self.extracted_features)):
-			self.features.append(np.concatenate((
+			self.features_train.append(np.concatenate((
 				self.extracted_features[i][0],
 				self.extracted_features[i][1],
 				self.extracted_features[i][2],
