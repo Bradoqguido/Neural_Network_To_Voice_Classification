@@ -6,4 +6,5 @@
 # Ignore the audio files.
 *.flac
 
+# Ignore the csv files.
 *.csv
