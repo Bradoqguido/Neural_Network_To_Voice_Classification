@@ -13,15 +13,15 @@ class ExtractFeatures:
 		self.dataFrameToExtract = dataFrameToExtract
 		self.path_to_csv_file = path_to_csv_file
 		self.features_train = []
-		self.extracted_features = pd.DataFrame([])
+		self.extracted_features = []
 	
 	def importFromFile(self):
 		try:
-			self.extracted_features = pd.read_csv(self.path_to_csv_file)
+			self.extracted_features = pd.read_csv(self.path_to_csv_file, index_col=0)
 			return False
 		except:
 			return True
-	
+
 	def generateTrain(self):
 		logging.info('Generating %s features train...', self.file_type)
 		for i in range(0, len(self.extracted_features)):
@@ -35,7 +35,6 @@ class ExtractFeatures:
 	def extractFeatures(self):
 		logging.info('Extracting %s features from files...', self.file_type)
 		self.extracted_features = self._parallelize_dataFrame(self.dataFrameToExtract, self._extract_features_caller)
-		print(self.extracted_features)
 
 	def _parallelize_dataFrame(self, df, func, n_cores=16):
 		# Use parallelism processing to process faster.

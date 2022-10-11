@@ -36,30 +36,30 @@ logging.info('Generating dataFrame from audio files...')
 
 logging.info('Generating train files...')
 train_features_extractor = ExtractFeatures('train', '../out/extracted_train_features.csv', 'speakers_train', trainSpeakers.importedDataFrame)
-if (train_features_extractor.importFromFile()):
-    train_features_extractor.extractFeatures()
-    train_features_extractor.extracted_features.to_csv('../out/extracted_train_features.csv')
+# if (train_features_extractor.importFromFile()):
+train_features_extractor.extractFeatures()
+train_features_extractor.extracted_features.to_csv('../out/extracted_train_features.csv')
 train_features_extractor.generateTrain()
 
 logging.info('Generating test files...')
 test_features_extractor = ExtractFeatures('test', '../out/extracted_test_features.csv', 'speakers_test', testSpeakers.importedDataFrame)
-if (test_features_extractor.importFromFile()):
-    test_features_extractor.extractFeatures()
-    test_features_extractor.extracted_features.to_csv('../out/extracted_test_features.csv')
+# if (test_features_extractor.importFromFile()):
+test_features_extractor.extractFeatures()
+test_features_extractor.extracted_features.to_csv('../out/extracted_test_features.csv')
 test_features_extractor.generateTrain()
 
 logging.info('Generating validation files...')
 validation_features_extractor = ExtractFeatures('validation', '../out/extracted_validation_features.csv', 'speakers_validation', validationSpeakers.importedDataFrame)
-if (validation_features_extractor.importFromFile()):
-    validation_features_extractor.extractFeatures()
-    validation_features_extractor.extracted_features.to_csv('../out/extracted_validation_features.csv')
+# if (validation_features_extractor.importFromFile()):
+validation_features_extractor.extractFeatures()
+validation_features_extractor.extracted_features.to_csv('../out/extracted_validation_features.csv')
 validation_features_extractor.generateTrain()
 
 logging.info('Generating x train data from train features...')
 X_trainData = np.array(train_features_extractor.features_train)
 
-# logging.info('Generating x test data from test features...')
-# X_testData = np.array(test_features_extractor.features_train)
+logging.info('Generating x test data from test features...')
+X_testData = np.array(test_features_extractor.features_train)
 
 logging.info('Generating x validation data from validation features...')
 X_validationData = np.array(validation_features_extractor.features_train)
@@ -81,8 +81,8 @@ ss = StandardScaler()
 logging.info('Generating scaloned X_trainData...')
 X_trainData = ss.fit_transform(X_trainData)
 
-# logging.info('Generating scaloned X_testData...')
-# X_testData = ss.transform(X_testData)
+logging.info('Generating scaloned X_testData...')
+X_testData = ss.transform(X_testData)
 
 logging.info('Generatind scaloned X_validationData...')
 X_validationData = ss.transform(X_validationData)
@@ -90,50 +90,50 @@ X_validationData = ss.transform(X_validationData)
 # Building a simple feed forward neural network
 # Build a simple dense model with early stopping and softmax for categorical classification, remember the count of classes you have
 
-# model = Sequential()
+model = Sequential()
 
-# model.add(Dense(193, input_shape=(trainSpeakers.fileCount,), activation = 'relu'))
-# model.add(Dropout(0.1))
+model.add(Dense(193, input_shape=(193,), activation = 'relu'))
+model.add(Dropout(0.1))
 
-# model.add(Dense(128, activation = 'relu'))
-# model.add(Dropout(0.25))
+model.add(Dense(128, activation = 'relu'))
+model.add(Dropout(0.25))
 
-# model.add(Dense(128, activation = 'relu'))
-# model.add(Dropout(0.5))
+model.add(Dense(128, activation = 'relu'))
+model.add(Dropout(0.5))
 
-# model.add(Dense(trainSpeakers.speakersCount, activation = 'softmax'))
+model.add(Dense(30, activation = 'softmax'))
 
-# model.summary()
+model.summary()
 
-# logging.info('Compiling model...')
-# model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam')
-# early_stop = EarlyStopping(monitor='val_loss', min_delta=0, patience=100, verbose=1, mode='auto')
+logging.info('Compiling model...')
+model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam')
+early_stop = EarlyStopping(monitor='val_loss', min_delta=0, patience=100, verbose=1, mode='auto')
 
-# # Fitting the model with the training and validation data
-# history = model.fit(x=X_trainData, y=y_trainData, batch_size=256, epochs=100, validation_data=(X_validationData, y_validationData), callbacks=[early_stop])
-# # historyDataFrame = pd.DataFrame(history)
-# # historyDataFrame.to_csv('../out/modelHistoryDataFrame.csv')
+# Fitting the model with the training and validation data
+history = model.fit(x=X_trainData, y=y_trainData, batch_size=256, epochs=100, validation_data=(X_validationData, y_validationData), callbacks=[early_stop])
+# historyDataFrame = pd.DataFrame(history)
+# historyDataFrame.to_csv('../out/modelHistoryDataFrame.csv')
 
-# # Check out our train accuracy and validation accuracy over epochs.
-# train_accuracy = history.history['accuracy']
-# val_accuracy = history.history['val_accuracy']
+# Check out our train accuracy and validation accuracy over epochs.
+train_accuracy = history.history['accuracy']
+val_accuracy = history.history['val_accuracy']
 
-# # Set figure size.
-# plt.figure(figsize=(12, 8))
+# Set figure size.
+plt.figure(figsize=(12, 8))
 
-# # Generate line plot of training, testing loss over epochs.
-# plt.plot(train_accuracy, label='Training Accuracy', color='#185fad')
-# plt.plot(val_accuracy, label='Validation Accuracy', color='orange')
+# Generate line plot of training, testing loss over epochs.
+plt.plot(train_accuracy, label='Training Accuracy', color='#185fad')
+plt.plot(val_accuracy, label='Validation Accuracy', color='orange')
 
-# # Set title
-# plt.title('Training and Validation Accuracy by Epoch', fontsize = 25)
+# Set title
+plt.title('Training and Validation Accuracy by Epoch', fontsize = 25)
 
-# plt.xlabel('Epoch', fontsize = 18)
-# plt.ylabel('Categorical Crossentropy', fontsize = 18)
-# plt.xticks(range(0,100,5), range(0,100,5))
-# plt.legend(fontsize = 18);
+plt.xlabel('Epoch', fontsize = 18)
+plt.ylabel('Categorical Crossentropy', fontsize = 18)
+plt.xticks(range(0,100,5), range(0,100,5))
+plt.legend(fontsize = 18);
 
-# plt.savefig('../out/training_accuracy_graph.png')
+plt.savefig('../out/training_accuracy_graph.png')
 
 # # We get our predictions from the test data
 # predictions = model.predict_classes(X_testData)
