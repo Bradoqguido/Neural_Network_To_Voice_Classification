@@ -7,15 +7,23 @@ from multiprocessing import  Pool
 import logging
 
 class ExtractFeatures:
-	def __init__(self, file_type, folder_path, dataFrame):
+	def __init__(self, file_type, path_to_csv_file, folder_path, dataFrameToExtract):
 		self.file_type = file_type
 		self.folder_path = folder_path
-		
-		logging.info('Extracting %s features from files...', file_type)
-		self.extracted_features = self.parallelize_dataFrame(dataFrame, self.extract_features_caller)
-
-		logging.info('Generating %s features train...', file_type)
+		self.dataFrameToExtract = dataFrameToExtract
+		self.path_to_csv_file = path_to_csv_file
 		self.features_train = []
+		self.extracted_features = pd.DataFrame([])
+	
+	def importFromFile(self):
+		try:
+			self.extracted_features = pd.read_csv(self.path_to_csv_file)
+			return False
+		except:
+			return True
+	
+	def generateTrain(self):
+		logging.info('Generating %s features train...', self.file_type)
 		for i in range(0, len(self.extracted_features)):
 			self.features_train.append(np.concatenate((
 				self.extracted_features[i][0],
@@ -23,8 +31,13 @@ class ExtractFeatures:
 				self.extracted_features[i][2],
 				self.extracted_features[i][3],
 				self.extracted_features[i][4]),axis=0))
-	
-	def parallelize_dataFrame(self, df, func, n_cores=16):
+
+	def extractFeatures(self):
+		logging.info('Extracting %s features from files...', self.file_type)
+		self.extracted_features = self._parallelize_dataFrame(self.dataFrameToExtract, self._extract_features_caller)
+		print(self.extracted_features)
+
+	def _parallelize_dataFrame(self, df, func, n_cores=16):
 		# Use parallelism processing to process faster.
 		df_split = np.array_split(df, n_cores)
 		pool = Pool(n_cores)
@@ -33,11 +46,11 @@ class ExtractFeatures:
 		pool.join()
 		return df
 
-	def extract_features_caller(self, files):
+	def _extract_features_caller(self, files):
 		tmpDataFrame = pd.DataFrame(files)
-		return tmpDataFrame.apply(self.extract_features, axis=1)
+		return tmpDataFrame.apply(self._extract_features, axis=1)
 
-	def extract_features(self, files):
+	def _extract_features(self, files):
 		logging.info('Processing %s file: %s.', self.file_type, files.file)
 		# Sets the name to be the path to where the file is in my computer
 		file_name = os.path.join(os.path.abspath(self.folder_path) + '/' + str(files.file))

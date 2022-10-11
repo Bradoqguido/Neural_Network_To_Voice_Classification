@@ -4,10 +4,25 @@ import logging
 import pandas as pd
 
 class ImportSpeakers:
-    def __init__(self, file_type, file_path):
+    def __init__(self, file_type, path_to_csv_file, file_path):
         self.file_type = file_type
         self.file_path = file_path
-        self.importedDataFrame = self.importDataFrame()
+
+        if (self._importFromFile()):
+            self.importedDataFrame = self.importDataFrame()
+        else:
+            self.importedDataFrame = self.importDataFrame()
+
+        self.fileCount = self.importedDataFrame['file'].count()
+        self.speakersByFileCount = self.importedDataFrame['speakerId'].value_counts()
+        self.speakersCount = self.speakersByFileCount.count()
+
+    def _importFromFile(self):
+        try:
+            self.importedDataFrame = pd.read_csv(self.path_to_csv_file)
+            return False
+        except:
+            return True
 
     def importDataFrame(self): 
         logging.info('Importing %s files...', self.file_type)
@@ -29,7 +44,7 @@ class ImportSpeakers:
         speaker = []
         for i in range(0, len(tmpDataFrame)):
             speaker.append(tmpDataFrame['file'][i].split('-')[0])
-
+        
         logging.info('Linking speakers...')
         # We now assign the speaker to a new column
         tmpDataFrame['speakerId'] = speaker
