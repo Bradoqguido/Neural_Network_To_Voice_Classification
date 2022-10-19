@@ -43,16 +43,16 @@ train_features_extractor.generateTrain()
 
 logging.info('Generating test files...')
 test_features_extractor = ExtractFeatures('test', '../out/extracted_test_features.csv', 'speakers_test', testSpeakers.importedDataFrame)
-# if (test_features_extractor.importFromFile()):
-test_features_extractor.extractFeatures()
-pd.DataFrame(test_features_extractor.json_features).to_csv('../out/extracted_test_features.csv')
+if (test_features_extractor.importFromFile()):
+    test_features_extractor.extractFeatures()
+    pd.DataFrame(test_features_extractor.json_features).to_csv('../out/extracted_test_features.csv')
 test_features_extractor.generateTrain()
 
 logging.info('Generating validation files...')
 validation_features_extractor = ExtractFeatures('validation', '../out/extracted_validation_features.csv', 'speakers_validation', validationSpeakers.importedDataFrame)
-# if (validation_features_extractor.importFromFile()):
-validation_features_extractor.extractFeatures()
-pd.DataFrame(validation_features_extractor.json_features).to_csv('../out/extracted_validation_features.csv')
+if (validation_features_extractor.importFromFile()):
+    validation_features_extractor.extractFeatures()
+    pd.DataFrame(validation_features_extractor.json_features).to_csv('../out/extracted_validation_features.csv')
 validation_features_extractor.generateTrain()
 
 logging.info('Generating x train data from train features...')
