@@ -36,27 +36,27 @@ logging.info('Generating dataFrame from audio files...')
 
 logging.info('Generating train files...')
 train_features_extractor = ExtractFeatures('train', '../out/extracted_train_features.csv', 'speakers_train', trainSpeakers.importedDataFrame)
-# if (train_features_extractor.importFromFile()):
-train_features_extractor.extractFeatures()
-train_features_extractor.extracted_features.to_csv('../out/extracted_train_features.csv')
+if (train_features_extractor.importFromFile()):
+    train_features_extractor.extractFeatures()
+    pd.DataFrame(train_features_extractor.json_features).to_csv('../out/extracted_train_features.csv')
 train_features_extractor.generateTrain()
 
 logging.info('Generating test files...')
 test_features_extractor = ExtractFeatures('test', '../out/extracted_test_features.csv', 'speakers_test', testSpeakers.importedDataFrame)
 # if (test_features_extractor.importFromFile()):
 test_features_extractor.extractFeatures()
-test_features_extractor.extracted_features.to_csv('../out/extracted_test_features.csv')
+pd.DataFrame(test_features_extractor.json_features).to_csv('../out/extracted_test_features.csv')
 test_features_extractor.generateTrain()
 
 logging.info('Generating validation files...')
 validation_features_extractor = ExtractFeatures('validation', '../out/extracted_validation_features.csv', 'speakers_validation', validationSpeakers.importedDataFrame)
 # if (validation_features_extractor.importFromFile()):
 validation_features_extractor.extractFeatures()
-validation_features_extractor.extracted_features.to_csv('../out/extracted_validation_features.csv')
+pd.DataFrame(validation_features_extractor.json_features).to_csv('../out/extracted_validation_features.csv')
 validation_features_extractor.generateTrain()
 
 logging.info('Generating x train data from train features...')
-X_trainData = np.array(train_features_extractor.features_train)
+X_trainData = np.array(train_features_extractor)
 
 logging.info('Generating x test data from test features...')
 X_testData = np.array(test_features_extractor.features_train)
@@ -92,13 +92,22 @@ X_validationData = ss.transform(X_validationData)
 
 model = Sequential()
 
-model.add(Dense(193, input_shape=(193,), activation = 'relu'))
+model.add(Dense(trainSpeakers.speakersCount, activation = 'relu'))
 model.add(Dropout(0.1))
 
-model.add(Dense(128, activation = 'relu'))
+model.add(Dense(round(trainSpeakers.speakersCount/2), activation = 'relu'))
 model.add(Dropout(0.25))
 
-model.add(Dense(128, activation = 'relu'))
+model.add(Dense(round(trainSpeakers.speakersCount/4), activation = 'relu'))
+model.add(Dropout(0.5))
+
+model.add(Dense(round(trainSpeakers.speakersCount/8), activation = 'relu'))
+model.add(Dropout(0.25))
+
+model.add(Dense(round(trainSpeakers.speakersCount/8), activation = 'relu'))
+model.add(Dropout(0.5))
+
+model.add(Dense(round(trainSpeakers.speakersCount/16), activation = 'relu'))
 model.add(Dropout(0.5))
 
 model.add(Dense(30, activation = 'softmax'))
