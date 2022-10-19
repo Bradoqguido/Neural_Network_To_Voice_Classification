@@ -5,6 +5,7 @@ import numpy as np
 import os
 from multiprocessing import  Pool
 import logging
+from feature import Feature
 
 class ExtractFeatures:
 	def __init__(self, file_type, path_to_csv_file, folder_path, dataFrameToExtract):
@@ -14,10 +15,17 @@ class ExtractFeatures:
 		self.path_to_csv_file = path_to_csv_file
 		self.features_train = []
 		self.extracted_features = []
+		self.json_features = []
 	
 	def importFromFile(self):
 		try:
-			self.extracted_features = pd.read_csv(self.path_to_csv_file, index_col=0)
+			raw_extracted_features = pd.read_csv(self.path_to_csv_file, index_col=0)
+			json_features = []
+			for i in range(0, len(raw_extracted_features)):
+				tmpFeature = Feature()
+				tmpFeature.fromObject(raw_extracted_features['0'][i])
+				json_features.append(tmpFeature)
+			self.extracted_features = json_features
 			return False
 		except:
 			return True
@@ -25,16 +33,22 @@ class ExtractFeatures:
 	def generateTrain(self):
 		logging.info('Generating %s features train...', self.file_type)
 		for i in range(0, len(self.extracted_features)):
-			self.features_train.append(np.concatenate((
-				self.extracted_features[i][0],
-				self.extracted_features[i][1],
-				self.extracted_features[i][2],
-				self.extracted_features[i][3],
-				self.extracted_features[i][4]),axis=0))
+			self.extracted_features.append(np.concatenate((
+				self.extracted_features[i].mfccs,
+				self.extracted_features[i].chroma,
+				self.extracted_features[i].mel,
+				self.extracted_features[i].contrast,
+				self.extracted_features[i].tonnetz),axis=0))
 
 	def extractFeatures(self):
 		logging.info('Extracting %s features from files...', self.file_type)
-		self.extracted_features = self._parallelize_dataFrame(self.dataFrameToExtract, self._extract_features_caller)
+		self.json_features = self._parallelize_dataFrame(self.dataFrameToExtract, self._extract_features_caller)
+		json_features = []
+		for i in range(0, len(self.json_features)):
+			tmpFeature = Feature()
+			tmpFeature.fromObject(self.json_features[i])
+			json_features.append(tmpFeature)
+		self.extracted_features = json_features
 
 	def _parallelize_dataFrame(self, df, func, n_cores=16):
 		# Use parallelism processing to process faster.
@@ -76,4 +90,5 @@ class ExtractFeatures:
 		# logging.info('Computing the tonal centroid features (tonnetz)...')
 		tonnetz = np.mean(librosa.feature.tonnetz(y=librosa.effects.harmonic(X),sr=sample_rate).T,axis=0)
 
-		return mfccs, chroma, mel, contrast, tonnetz
+		tmp = Feature(mfccs.tolist(), chroma.tolist(), mel.tolist(), contrast.tolist(), tonnetz.tolist())
+		return tmp.toObject()
