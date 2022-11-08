@@ -2,7 +2,8 @@
 import json
 
 class Feature:
-    def __init__(self, mfccs = [], chroma = [], mel = [], contrast = [], tonnetz = []):
+    def __init__(self, fileName = '', mfccs = [], chroma = [], mel = [], contrast = [], tonnetz = []):
+        self.fileName = fileName
         self.mfccs = mfccs
         self.chroma = chroma
         self.mel = mel
@@ -11,6 +12,7 @@ class Feature:
     
     def fromObject(self, data):
         tmpObject = json.loads(data)
+        self.fileName = tmpObject['fileName']
         self.mfccs = tmpObject['mfccs']
         self.chroma = tmpObject['chroma']
         self.mel = tmpObject['mel']
@@ -20,6 +22,7 @@ class Feature:
 
     def toObject(self):
         return json.dumps({
+            'fileName': self.fileName,
             'mfccs': self.mfccs,
             'chroma': self.chroma,
             'mel': self.mel,

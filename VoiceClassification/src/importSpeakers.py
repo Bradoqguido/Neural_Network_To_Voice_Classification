@@ -6,12 +6,12 @@ import pandas as pd
 class ImportSpeakers:
     def __init__(self, file_type, path_to_csv_file, file_path):
         self.file_type = file_type
+        self.path_to_csv_file = path_to_csv_file
         self.file_path = file_path
 
         if (self._importFromFile()):
             self.importedDataFrame = self.importDataFrame()
-        else:
-            self.importedDataFrame = self.importDataFrame()
+            self.importedDataFrame.to_csv(self.path_to_csv_file)
 
         self.fileCount = self.importedDataFrame['file'].count()
         self.speakersByFileCount = self.importedDataFrame['speakerId'].value_counts()
@@ -19,7 +19,7 @@ class ImportSpeakers:
 
     def _importFromFile(self):
         try:
-            self.importedDataFrame = pd.read_csv(self.path_to_csv_file)
+            self.importedDataFrame = pd.read_csv(self.path_to_csv_file, index_col=0)
             return False
         except:
             return True

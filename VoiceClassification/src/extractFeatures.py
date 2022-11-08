@@ -32,8 +32,9 @@ class ExtractFeatures:
 
 	def generateTrain(self):
 		logging.info('Generating %s features train...', self.file_type)
+		print(self.extracted_features[0].mfccs)
 		for i in range(0, len(self.extracted_features)):
-			self.extracted_features.append(np.concatenate((
+			self.features_train.append(np.concatenate((
 				self.extracted_features[i].mfccs,
 				self.extracted_features[i].chroma,
 				self.extracted_features[i].mel,
@@ -90,5 +91,5 @@ class ExtractFeatures:
 		# logging.info('Computing the tonal centroid features (tonnetz)...')
 		tonnetz = np.mean(librosa.feature.tonnetz(y=librosa.effects.harmonic(X),sr=sample_rate).T,axis=0)
 
-		tmp = Feature(mfccs.tolist(), chroma.tolist(), mel.tolist(), contrast.tolist(), tonnetz.tolist())
+		tmp = Feature(str(files.file), mfccs.tolist(), chroma.tolist(), mel.tolist(), contrast.tolist(), tonnetz.tolist())
 		return tmp.toObject()

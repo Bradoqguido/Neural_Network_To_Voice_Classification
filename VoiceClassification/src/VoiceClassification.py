@@ -22,15 +22,13 @@ format = "%(asctime)s: %(message)s"
 logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 
 logging.info('Indexing and importing audio files from speakers...')
-
 trainSpeakers = ImportSpeakers('train', '../out/trainDataFrame.csv', 'speakers_train')
-trainSpeakers.importedDataFrame.to_csv('../out/trainDataFrame.csv')
-
 testSpeakers = ImportSpeakers('test', '../out/testDataFrame.csv', 'speakers_test')
-testSpeakers.importedDataFrame.to_csv('../out/testDataFrame.csv')
-
 validationSpeakers = ImportSpeakers('validation', '../out/validationDataFrame.csv', 'speakers_validation')
-validationSpeakers.importedDataFrame.to_csv('../out/validationDataFrame.csv')
+
+# print(trainSpeakers.speakersCount)
+# print(testSpeakers.speakersCount)
+# print(validationSpeakers.speakersCount)
 
 logging.info('Generating dataFrame from audio files...')
 
@@ -56,7 +54,7 @@ if (validation_features_extractor.importFromFile()):
 validation_features_extractor.generateTrain()
 
 logging.info('Generating x train data from train features...')
-X_trainData = np.array(train_features_extractor)
+X_trainData = np.array(train_features_extractor.features_train)
 
 logging.info('Generating x test data from test features...')
 X_testData = np.array(test_features_extractor.features_train)
@@ -92,25 +90,25 @@ X_validationData = ss.transform(X_validationData)
 
 model = Sequential()
 
-model.add(Dense(trainSpeakers.speakersCount, activation = 'relu'))
+model.add(Dense(trainSpeakers.speakersCount, activation='relu'))
 model.add(Dropout(0.1))
 
-model.add(Dense(round(trainSpeakers.speakersCount/2), activation = 'relu'))
+model.add(Dense(round(trainSpeakers.speakersCount/2), activation='relu'))
 model.add(Dropout(0.25))
 
-model.add(Dense(round(trainSpeakers.speakersCount/4), activation = 'relu'))
+model.add(Dense(round(trainSpeakers.speakersCount/4), activation='relu'))
 model.add(Dropout(0.5))
 
-model.add(Dense(round(trainSpeakers.speakersCount/8), activation = 'relu'))
+model.add(Dense(round(trainSpeakers.speakersCount/8), activation='relu'))
 model.add(Dropout(0.25))
 
-model.add(Dense(round(trainSpeakers.speakersCount/8), activation = 'relu'))
+model.add(Dense(round(trainSpeakers.speakersCount/8), activation='relu'))
 model.add(Dropout(0.5))
 
-model.add(Dense(round(trainSpeakers.speakersCount/16), activation = 'relu'))
+model.add(Dense(round(trainSpeakers.speakersCount/16), activation='relu'))
 model.add(Dropout(0.5))
 
-model.add(Dense(30, activation = 'softmax'))
+model.add(Dense(40, activation='softmax'))
 
 model.summary()
 
