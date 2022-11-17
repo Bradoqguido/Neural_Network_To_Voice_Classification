@@ -93,7 +93,7 @@ import logging
 # plt.xticks(range(0,100,5), range(0,100,5))
 # plt.legend(fontsize = 18);
 
-# plt.savefig('../out/training_accuracy_graph.png')
+# plt.savefig('../out/try_08_about_to_9986_percent_training_accuracy_graph_6_layers.png')
 
 # # We get our predictions from the test data
 # predictions = model.predict_classes(X_testData)

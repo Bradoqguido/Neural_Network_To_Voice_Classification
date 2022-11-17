@@ -32,7 +32,6 @@ class ExtractFeatures:
 
 	def generateTrain(self):
 		logging.info('Generating %s features train...', self.file_type)
-		print(self.extracted_features[0].mfccs)
 		for i in range(0, len(self.extracted_features)):
 			self.features_train.append(np.concatenate((
 				self.extracted_features[i].mfccs,

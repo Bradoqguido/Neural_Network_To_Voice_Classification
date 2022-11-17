@@ -90,27 +90,19 @@ X_validationData = ss.transform(X_validationData)
 
 model = Sequential()
 
-model.add(Dense(trainSpeakers.speakersCount, activation='relu'))
+model.add(Dense(193, input_shape=(193,), activation = 'relu'))
 model.add(Dropout(0.1))
 
-model.add(Dense(round(trainSpeakers.speakersCount/2), activation='relu'))
+model.add(Dense(128, activation='relu'))
 model.add(Dropout(0.25))
 
-model.add(Dense(round(trainSpeakers.speakersCount/4), activation='relu'))
+model.add(Dense(128, activation='relu'))
 model.add(Dropout(0.5))
 
-model.add(Dense(round(trainSpeakers.speakersCount/8), activation='relu'))
-model.add(Dropout(0.25))
-
-model.add(Dense(round(trainSpeakers.speakersCount/8), activation='relu'))
+model.add(Dense(128, activation='relu'))
 model.add(Dropout(0.5))
 
-model.add(Dense(round(trainSpeakers.speakersCount/16), activation='relu'))
-model.add(Dropout(0.5))
-
-model.add(Dense(40, activation='softmax'))
-
-model.summary()
+model.add(Dense(30, activation='softmax'))
 
 logging.info('Compiling model...')
 model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam')
